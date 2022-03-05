@@ -13,7 +13,7 @@ module.exports = new class Goyabu {
 
     async listAnimes(query, callback){
 
-        let animes = await axios("https://goyabu.com/api/show2.php");
+        let animes = await axios("https://goyabu.com/api/show2.php", { headers: { 'X-Forwarded-For': '143.137.88.96' } });
 
         let data = JSON.parse(animes);
 
@@ -58,8 +58,8 @@ module.exports = new class Goyabu {
 
     async listAnimesUpdated(query, callback){
 
-        let data = await axios("https://goyabu.com/");
-        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN } }));
+        let data = await axios("https://goyabu.com/", { headers: { 'X-Forwarded-For': '143.137.88.96' } });
+        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN, 'X-Forwarded-For': '143.137.88.96' } }));
 
         let $ = cheerio.load(data);
         let send = [];
@@ -89,7 +89,7 @@ module.exports = new class Goyabu {
             return callback(false, 400, "Envie todos os parametros");
         }
         
-        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN } }));
+        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN, 'X-Forwarded-For': '143.137.88.96' } }));
 
         let d = {};
         let r = list.find(e => e.slug == query.name);
