@@ -93,7 +93,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });
@@ -120,7 +120,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });
@@ -146,7 +146,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });
