@@ -59,7 +59,7 @@ module.exports = new class Goyabu {
     async listAnimesUpdated(query, callback){
 
         let data = await axios("https://goyabu.com/");
-        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true"));
+        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN } }));
 
         let $ = cheerio.load(data);
         let send = [];
@@ -89,7 +89,7 @@ module.exports = new class Goyabu {
             return callback(false, 400, "Envie todos os parametros");
         }
         
-        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true"));
+        let { data: list } = JSON.parse(await axios("https://yui-anime-api.vercel.app/v1/goyabu/list?nolimit=true", { headers: { 'Authorization': process.env.AUTHORIZATION_TOKEN } }));
 
         let d = {};
         let r = list.find(e => e.slug == query.name);
