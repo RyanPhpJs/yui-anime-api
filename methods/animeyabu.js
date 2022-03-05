@@ -154,7 +154,9 @@ module.exports = new class AnimeYabu {
                         })
                     }
                 }).catch((err) => {
-                    console.log(err);
+                    if(err.name == "TypeError"){
+                        err.name = err.name + " - " + err.message
+                    }
                     resolve({
                         status: 500,
                         success: false,
