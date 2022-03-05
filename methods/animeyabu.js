@@ -59,6 +59,9 @@ module.exports = new class AnimeYabu {
         $(".phpvibe-video-list .video").each((index, element) => {
             let d = {}
             d.thumb = $(element).find("img").attr("src");
+            if(!d.thumb){
+                return callback(true, data);
+            }
             if(d.thumb.startsWith("capas")){
                 d.thumb = "https://animeyabu.com/"+d.thumb;
             }
