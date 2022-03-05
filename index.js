@@ -5,7 +5,7 @@ const app = express();
 
 const method = {
     crunchyroll: require("./methods/crunchyroll"),
-    goyabu: require("./methods/goyabu")
+    animeyabu: require("./methods/animeyabu")
 }
 
 app.use("/v1", (req, res, next) => {
@@ -66,6 +66,6 @@ app.get("/v1/:method/:action", async (req, res) => {
 
 });
 
-app.listen(9999, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log("Server Running");
 })
