@@ -58,11 +58,9 @@ module.exports = new class AnimeYabu {
         let send = [];
         $(".phpvibe-video-list .video").each((index, element) => {
             let d = {}
-            d.thumb = $(element).find("img").attr("src");
-            if(!d.thumb){
-                return callback(true, data);
-            }
-            if(d.thumb.startsWith("capas")){
+            d.thumb = $(element).find("img").attr("src") ?? $(element).find("img").attr("data-cfsrc");
+            if(d.thumb){
+                if(d.thumb.startsWith("capas")){
                 d.thumb = "https://animeyabu.com/"+d.thumb;
             }
             let r = list.find(e => e.thumb == d.thumb);
@@ -76,6 +74,7 @@ module.exports = new class AnimeYabu {
                 d.time = $(element).find(".timer").text();
                 d.titleep = $(element).find(".video-title a").text();
                 send.push(d);
+            }
             }
         });
 
