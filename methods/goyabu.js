@@ -1,70 +1,111 @@
 const axios = require("cloudscraper");
 const cheerio = require('cheerio');
-module.exports = new class Crunchyroll {
 
-    async listAnimes(params, callback){
+module.exports = new class Goyabu {
 
-        let data = await axios("https://www.crunchyroll.com/pt-br/videos/anime/popular/ajax_page?pg="+(params.page ?? 1));
+    errorMsg = [
+        "Erro do request, codigo de resposta invalido",
+        "Cloudflare retornou um captcha, tente novamente",
+        "Site do anime fora do ar ou request bloqueado",
+        "Erro interno",
+        "Erro interno"
+    ]
+
+    async listAnimes(query, callback){
+
+        let animes = await axios("https://goyabu.com/api/show2.php");
+
+        let data = JSON.parse(animes);
+
+        if(!query.limit){
+            query.limit = 40;
+        }
+
+        if(!query.page){
+            query.page = 1;
+        }
+
+        if(isNaN(query.page)){
+            query.page = 1;
+        }
+
+        if(Math.floor(query.page) < 1){
+            query.page = 1;
+        }
+
+        if(isNaN(query.limit)){
+            query.limit = 40;
+        }
+
+        let send = [];
+
+        if(!query.nolimit && query.nolimit !== "true")
+        data = data.slice((Math.floor(query.page)*Math.floor(query.limit))-Math.floor(query.limit), (Math.floor(query.page)*Math.floor(query.limit))-Math.floor(query.limit)+Math.floor(query.limit))
+        for(let item of data){
+            let d = {};
+            d.id = item.hash;
+            d.name = item.title;
+            d.genero = item.genre;
+            d.url = "https://goyabu.com/anime/"+item.slug+"/";
+            d.slug = item.slug;
+            d.thumb = "https://goyabu.com/"+item.cover;
+            send.push(d);
+        }
+
+        callback(true, send);
+
+    }
+
+    async listAnimesUpdated(query, callback){
+
+        let data = await axios("https://goyabu.com/");
+        let { data: list } = JSON.parse(await axios("http://localhost:9999/v1/goyabu/list?nolimit=true"));
 
         let $ = cheerio.load(data);
         let send = [];
-        $("li").each((index, element) => {
+        $(".releases-box .anime-episode").each((index, element) => {
             let d = {}
-            d.group_id = $(element).attr("group_id");
-            d.name = $(element).find(".series-title").text().trim();
-            d.thumb = $(element).find(".portrait").attr("src");
-            d.url = $(element).find(".block-link").attr("href");
-            if(d.url.startsWith("/") && !d.url.startsWith("//")){
-                d.url = "https://www.crunchyroll.com"+d.url;
+            d.thumb = $(element).find("img").attr("src");
+            let r = list.find(e => e.thumb == d.thumb);
+            if(r){
+                d.id = r.id;
+                d.name = r.name;
+                d.genero = r.genero;
+                d.url = r.url;
+                d.thumb = r.thumb;
+                d.slug = r.slug;
+                d.ep = $(element).find(".timer").text();
+                send.push(d);
             }
-            send.push(d);
         });
 
         callback(true, send);
 
     }
 
-    async listAnimesUpdated(params, callback){
+    async getAnimeByUrl(query, callback){
 
-        let data = await axios("https://www.crunchyroll.com/pt-br/videos/anime/updated");
-
-        let $ = cheerio.load(data);
-        let send = [];
-        $("#main_content li").each((index, element) => {
-            let d = {}
-            d.group_id = $(element).attr("group_id");
-            d.name = $(element).find(".series-title").text().trim();
-            d.thumb = $(element).find(".portrait").attr("src");
-            d.url = $(element).find(".block-link").attr("href");
-            d.data = $(element).find(".series-data").text().trim();
-            d.ep = d.data.split(" – ")[0];
-            d.data = d.data.split(" – ")[1];
-            if(d.url.startsWith("/") && !d.url.startsWith("//")){
-                d.url = "https://www.crunchyroll.com"+d.url;
-            }
-            send.push(d);
-        });
-
-        callback(true, send);
-
-    }
-
-    async getAnimeByUrl(params, callback){
-        if(!params.name){
+        if(!query.name){
             return callback(false, 400, "Envie todos os parametros");
         }
-        let data = await axios("https://www.crunchyroll.com/pt-br/"+params.name);
-        let $ = cheerio.load(data);
-        if($('meta[property="og:type"]').attr("content") !== "tv_show"){
-            return callback(false, 400, "Isso não é um anime");
+        
+        let { data: list } = JSON.parse(await axios("http://localhost:9999/v1/goyabu/list?nolimit=true"));
+
+        let d = {};
+        let r = list.find(e => e.slug == query.name);
+        if(r){
+            d.id = r.id;
+            d.name = r.name;
+            d.genero = r.genero;
+            d.url = r.url;
+            d.thumb = r.thumb;
+            d.slug = r.slug;
+        }else{
+            return callback(false, 404, "Não encontrado o anime");
         }
-        callback(true, {
-            type: $('meta[property="og:type"]').attr("content"),
-            title: $('meta[property="og:title"]').attr("content"),
-            description: $('meta[property="og:description"]').attr("content"),
-            image: $('meta[property="og:image"]').attr("content"),
-            url:  $('meta[property="og:url"]').attr("content"),
-        })
+
+        callback(true, d);
+
     }
 
     run(action, query){
@@ -93,7 +134,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });
@@ -120,7 +161,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });
@@ -146,7 +187,7 @@ module.exports = new class Crunchyroll {
                         status: 500,
                         success: false,
                         data: {
-                            message: err.name + " - " + (this.errorMsg[err.errorType])
+                            message: err.name
                         }
                     })
                 });

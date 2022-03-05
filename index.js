@@ -66,6 +66,6 @@ app.get("/v1/:method/:action", async (req, res) => {
 
 });
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(9999, () => {
     console.log("Server Running");
 })
