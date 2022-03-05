@@ -11,5 +11,11 @@
     "cloudscraper": "^4.6.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.3"
-  }
+  },
+  "engine": {
+    "node": "14.x"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
